@@ -57,48 +57,31 @@ class _TawkState extends State<Tawk> {
         };
       ''';
     }
+    _controller.loadRequest(Uri.parse(widget.directChatLink));
+    _controller.runJavaScript(javascriptString);
+    _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    _controller.setNavigationDelegate(NavigationDelegate(
+      onPageFinished: (url) {
+        if (widget.visitor != null) {
+          _setUser(widget.visitor!);
+        }
 
-    _controller.runJavascript(javascriptString);
+        if (widget.onLoad != null) {
+          widget.onLoad!();
+        }
+
+        setState(() {
+          _isLoading = false;
+        });
+      },
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        WebView(
-          initialUrl: widget.directChatLink,
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            setState(() {
-              _controller = webViewController;
-            });
-          },
-          navigationDelegate: (NavigationRequest request) {
-            if (request.url == 'about:blank' ||
-                request.url.contains('tawk.to')) {
-              return NavigationDecision.navigate;
-            }
-
-            if (widget.onLinkTap != null) {
-              widget.onLinkTap!(request.url);
-            }
-
-            return NavigationDecision.prevent;
-          },
-          onPageFinished: (_) {
-            if (widget.visitor != null) {
-              _setUser(widget.visitor!);
-            }
-
-            if (widget.onLoad != null) {
-              widget.onLoad!();
-            }
-
-            setState(() {
-              _isLoading = false;
-            });
-          },
-        ),
+        WebViewWidget(controller: _controller),
         _isLoading
             ? widget.placeholder ??
                 const Center(
