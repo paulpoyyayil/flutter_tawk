@@ -4,44 +4,32 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'tawk_visitor.dart';
-
 /// [Tawk] Widget.
 class Tawk extends StatefulWidget {
   /// Tawk direct chat link.
   final String directChatLink;
 
-  /// Object used to set the visitor name and email.
-  final TawkVisitor? visitor;
-
-  /// Called right after the widget is rendered.
-  final Function? onLoad;
-
-  /// Called when a link pressed.
-  final Function(String)? onLinkTap;
-
   /// Render your own loading widget.
-  final Widget? placeholder;
+  final Widget placeholder;
 
   const Tawk({
     Key? key,
     required this.directChatLink,
-    this.visitor,
-    this.onLoad,
-    this.onLinkTap,
-    this.placeholder,
+    required this.placeholder,
   }) : super(key: key);
 
   @override
-  _TawkState createState() => _TawkState();
+  State createState() => _TawkState();
 }
 
 class _TawkState extends State<Tawk> {
   late WebViewController _controller;
+  late String url;
   bool _isLoading = true;
 
-  void _setUser(TawkVisitor visitor) {
-    final json = jsonEncode(visitor);
+  @override
+  void initState() {
+    url = widget.directChatLink;
     String javascriptString;
 
     if (Platform.isIOS) {
@@ -57,38 +45,32 @@ class _TawkState extends State<Tawk> {
         };
       ''';
     }
-    _controller.loadRequest(Uri.parse(widget.directChatLink));
-    _controller.runJavaScript(javascriptString);
-    _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    _controller.setNavigationDelegate(NavigationDelegate(
-      onPageFinished: (url) {
-        if (widget.visitor != null) {
-          _setUser(widget.visitor!);
-        }
-
-        if (widget.onLoad != null) {
-          widget.onLoad!();
-        }
-
-        setState(() {
-          _isLoading = false;
-        });
-      },
-    ));
+    _controller = WebViewController()
+      ..runJavaScript(javascriptString)
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (navigation) {
+            if (navigation.url != url) {
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+          onPageFinished: (url) {
+            setState(() {
+              _isLoading = false;
+            });
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(url));
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        WebViewWidget(controller: _controller),
-        _isLoading
-            ? widget.placeholder ??
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-            : Container(),
-      ],
-    );
+    return _isLoading
+        ? widget.placeholder
+        : WebViewWidget(controller: _controller);
   }
 }
