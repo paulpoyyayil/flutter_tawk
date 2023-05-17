@@ -36,8 +36,6 @@ Tawk(
 )
 ```
 
-See the `example` directory for the complete sample app.
-
 ## Customization
 
 ### Tawk
@@ -45,18 +43,8 @@ See the `example` directory for the complete sample app.
 | Parameter      | Type          | Default                                      | Description                                    | Required |
 | -------------- | ------------- | -------------------------------------------- | ---------------------------------------------- | -------- |
 | directChatLink | `String`      | `null`                                       | Tawk direct chat link.                         | Yes      |
-| visitor        | `TawkVisitor` | `null`                                       | Object used to set the visitor name and email. | No       |
-| onLoad         | `Function`    | `null`                                       | Called right after the widget is rendered.     | No       |
-| onLinkTap      | `Function`    | `null`                                       | Called when a link pressed.                    | No       |
-| placeholder    | `Widget`      | `Center(child: CircularProgressIndicator())` | Render your own loading widget.                | No       |
+| placeholder    | `Widget`      | `Center(child: CircularProgressIndicator())` | Render your own loading widget.                | Yes      |
 
-### TawkVisitor
-
-| Parameter | Type     | Default | Description                                                 | Required |
-| --------- | -------- | ------- | ----------------------------------------------------------- | -------- |
-| name      | `String` | `null`  | Visitor's name.                                             | No       |
-| email     | `String` | `null`  | Visitor's email.                                            | No       |
-| hash      | `String` | `null`  | [Secure mode](https://developer.tawk.to/jsapi/#SecureMode). | No       |
 
 ## Contributions
 
